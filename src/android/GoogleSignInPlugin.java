@@ -101,7 +101,15 @@ public class GoogleSignInPlugin extends CordovaPlugin {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account.getIdToken());
+
+                JSONObject userInfo = new JSONObject();
+                userInfo.put("id", account.getId());
+                userInfo.put("display_name", account.getDisplayName());
+                userInfo.put("email", account.getEmail());
+                userInfo.put("photo_url", account.getPhotoUrl());
+                userInfo.put("id_token", account.getIdToken());
+
+                mCallbackContext.success(getSuccessMessageForOneTapLogin(userInfo));
             } catch (Exception ex) {
                 System.out.println("Google sign in failed: " + ex);
                 mCallbackContext.error(getErrorMessageInJsonString(ex.getMessage()));
@@ -110,6 +118,14 @@ public class GoogleSignInPlugin extends CordovaPlugin {
             try {
                 SignInCredential credential = mOneTapSigninClient.getSignInCredentialFromIntent(data);
                 firebaseAuthWithGoogle(credential.getGoogleIdToken());
+
+                JSONObject userInfo = new JSONObject();
+                userInfo.put("id", credential.getId());
+                userInfo.put("display_name", credential.getDisplayName() );
+                userInfo.put("photo_url", credential.getProfilePictureUri() );
+                userInfo.put("id_token", credential.getGoogleIdToken());
+
+                mCallbackContext.success(getSuccessMessageForOneTapLogin(userInfo));
             } catch(ApiException ex) {
                 String errorMessage = "";
                 switch (ex.getStatusCode()) {
